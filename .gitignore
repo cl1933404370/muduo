@@ -1,3 +1,7 @@
 *.swp
 bazel-*
 compile_commands.json
+out
+out/**
+.vscode/**
+.vscode

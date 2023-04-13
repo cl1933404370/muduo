@@ -1,0 +1,42 @@
+# CMake configuration file for muduo
+#
+# This provides the muduo::muduo target, which you can depend on by adding it
+# to your target_link_libraries().
+#
+# It also defines the following variables, although using these directly is not
+# necessary if you use the muduo::muduo target instead.
+#  MUDUO_INCLUDE_DIR
+#  MUDUO_LIBRARIES
+
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+
+set_and_check(MUDUO_INCLUDE_DIRS "@PACKAGE_INCLUDE_INSTALL_DIR@")
+set_and_check(MUDUO_INCLUDE_DIR "@PACKAGE_INCLUDE_INSTALL_DIR@")
+set_and_check(MUDUO_CMAKE_DIR "@PACKAGE_CMAKE_INSTALL_DIR@")
+
+# find_dependency() ends up changing PACKAGE_PREFIX_DIR, so save
+# muduo's prefix directory in the MUDUO_PREFIX_DIR variable
+set(MUDUO_PREFIX_DIR "${PACKAGE_PREFIX_DIR}")
+
+# Include the muduo-targets.cmake file, which is generated from our CMake rules
+if (NOT TARGET muduo::muduo)
+  include("${MUDUO_CMAKE_DIR}/muduo-targets.cmake")
+endif()
+
+# Set MUDUO_LIBRARIES from our muduo::muduo target
+set(MUDUO_LIBRARIES muduo::muduo)
+
+# Find muduo's dependencies
+find_dependency(fmt)
+find_dependency(ares)
+find_dependency(ZLIB)
+find_dependency(CURL)
+find_dependency(protobuf)
+set(Boost_USE_STATIC_LIBS "@MUDUO_BOOST_LINK_STATIC@")
+find_dependency(Boost)
+
+if (NOT muduo_FIND_QUIETLY)
+  message(STATUS "Found muduo: ${MUDUO_PREFIX_DIR}")
+endif()

@@ -64,34 +64,6 @@ find_package(c-ares CONFIG REQUIRED)
 # find_library(BOOSTPO_LIBRARY NAMES boost_program_options)
 # find_library(BOOSTSYSTEM_LIBRARY NAMES boost_system)
 
-
-if(CARES_INCLUDE_DIR AND CARES_LIBRARY)
-  message(STATUS "found cares")
-endif()
-if(CURL_FOUND)
-  message(STATUS "found curl")
-endif()
-if(PROTOBUF_FOUND)
-  message(STATUS "found protobuf")
-endif()
-if(TCMALLOC_INCLUDE_DIR AND TCMALLOC_LIBRARY)
-  message(STATUS "found tcmalloc")
-endif()
-if(ZLIB_FOUND)
-  message(STATUS "found zlib")
-endif()
-if(HIREDIS_INCLUDE_DIR AND HIREDIS_LIBRARY)
-  message(STATUS "found hiredis")
-endif()
-if(GD_INCLUDE_DIR AND GD_LIBRARY)
-  message(STATUS "found gd")
-endif()
-if(THRIFT_COMPILER AND THRIFT_INCLUDE_DIR AND THRIFT_LIBRARY)
-  message(STATUS "found thrift")
-endif()
-
-include_directories(${Boost_INCLUDE_DIRS})
-
 include_directories(${PROJECT_SOURCE_DIR})
 
 string(TOUPPER ${CMAKE_BUILD_TYPE} BUILD_TYPE)
@@ -108,3 +80,27 @@ else()
     add_subdirectory(examples/cdns)
   endif()
 endif()
+
+set(CMAKE_INSTALL_DIR /home/cl/git/muduo/installed)
+message(${CMAKE_INSTALL_DIR})
+include(CMakePackageConfigHelpers)
+configure_package_config_file(
+  muduo-config.cmake.in
+  muduo-config.cmake
+  INSTALL_DESTINATION ${CMAKE_INSTALL_DIR}
+  PATH_VARS
+    INCLUDE_INSTALL_DIR
+    CMAKE_INSTALL_DIR
+)
+install(
+  FILES ${CMAKE_CURRENT_BINARY_DIR}/muduo-config.cmake
+  DESTINATION ${CMAKE_INSTALL_DIR}
+  COMPONENT dev
+)
+install(
+  EXPORT muduo
+  DESTINATION ${CMAKE_INSTALL_DIR}
+  NAMESPACE muduo::
+  FILE muduo-targets.cmake
+  COMPONENT dev
+)
