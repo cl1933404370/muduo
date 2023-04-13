@@ -7,10 +7,6 @@
 # necessary if you use the muduo::muduo target instead.
 #  MUDUO_INCLUDE_DIR
 #  MUDUO_LIBRARIES
-set ( PackageName @PackageName@ )
-set ( LIB_NAME @LIB_NAME@ )
-set ( ${PackageName}_VERSION ${PACKAGE_VERSION} )
-message ( STATUS "PackageName = ${PackageName}" )
 @PACKAGE_INIT@
 
 include(CMakeFindDependencyMacro)
@@ -24,7 +20,9 @@ set_and_check(MUDUO_CMAKE_DIR "@PACKAGE_CMAKE_INSTALL_DIR@")
 set(MUDUO_PREFIX_DIR "${PACKAGE_PREFIX_DIR}")
 
 # Include the muduo-targets.cmake file, which is generated from our CMake rules
-include(${CMAKE_CURRENT_LIST_DIR}/${PROJECT_NAME}-targets.cmake)
+if (NOT TARGET muduo::muduo)
+  include("${MUDUO_CMAKE_DIR}/@PROJECT_NAME@-targets.cmake")
+endif()
 
 # Set MUDUO_LIBRARIES from our muduo::muduo target
 set(${PackageName}_LIBRARIES muduo::muduo)
@@ -35,7 +33,8 @@ find_dependency(c-ares REQUIRED)
 find_dependency(ZLIB REQUIRED)
 find_dependency(CURL REQUIRED)
 find_dependency(Protobuf REQUIRED)
-set(Boost_USE_STATIC_LIBS "@FOLLY_BOOST_LINK_STATIC@")
+set(Boost_USE_STATIC_LIBS "@MUDUO_BOOST_LINK_STATIC@")
+
 find_dependency(Boost 1.51.0 MODULE
   COMPONENTS
    unit_test_framework
