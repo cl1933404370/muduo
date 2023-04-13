@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 2.8.12)
 
 project(muduo C CXX)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+set(CMAKE_INCLUDE_CURRENT_DIR_IN_INTERFACE ON)
+set(muduo_VERSION 2.0.4)
+
 #enable_testing()
 
 if(NOT CMAKE_BUILD_TYPE)
@@ -53,7 +57,7 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 # find_package(folly CONFIG REQUIRED)
 #find_package(glog CONFIG REQUIRED)
 # find_package(TBB CONFIG REQUIRED)
-find_package(protobuf CONFIG REQUIRED)
+find_package(Protobuf CONFIG REQUIRED)
 #find_package(gRPC CONFIG REQUIRED)
 find_package(CURL CONFIG REQUIRED)
 find_package(ZLIB REQUIRED)
@@ -63,6 +67,7 @@ find_package(c-ares CONFIG REQUIRED)
 # find_library(BOOSTTEST_LIBRARY NAMES boost_unit_test_framework)
 # find_library(BOOSTPO_LIBRARY NAMES boost_program_options)
 # find_library(BOOSTSYSTEM_LIBRARY NAMES boost_system)
+include_directories(${Boost_INCLUDE_DIRS})
 
 include_directories(${PROJECT_SOURCE_DIR})
 
@@ -81,26 +86,45 @@ else()
   endif()
 endif()
 
-set(CMAKE_INSTALL_DIR /home/cl/git/muduo/installed)
-message(${CMAKE_INSTALL_DIR})
+set ( PackageName ${PROJECT_NAME} )
+set ( LIB_NAME "muduolib" )
+set(INCLUDE_INSTALL_DIR include CACHE STRING
+    "The subdirectory where header files should be installed")
+set(LIB_INSTALL_DIR lib CACHE STRING
+    "The subdirectory where libraries should be installed")
+set(BIN_INSTALL_DIR bin CACHE STRING
+    "The subdirectory where binaries should be installed")
+set(CMAKE_INSTALL_DIR ${LIB_INSTALL_DIR}/cmake/${PROJECT_NAME} CACHE STRING
+    "The subdirectory where CMake package config files should be installed")
 include(CMakePackageConfigHelpers)
+
 configure_package_config_file(
-  muduo-config.cmake.in
-  muduo-config.cmake
+  ${PROJECT_NAME}-config.cmake.in
+  ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake
   INSTALL_DESTINATION ${CMAKE_INSTALL_DIR}
   PATH_VARS
     INCLUDE_INSTALL_DIR
     CMAKE_INSTALL_DIR
 )
+
+write_basic_package_version_file(
+  ${CMAKE_CURRENT_BINARY_DIR}/${PackageName}ConfigVersion.cmake
+  VERSION ${muduo_VERSION}
+  COMPATIBILITY AnyNewerVersion
+)
+
 install(
-  FILES ${CMAKE_CURRENT_BINARY_DIR}/muduo-config.cmake
+  FILES
+  ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake
+  "${CMAKE_CURRENT_BINARY_DIR}/${PackageName}ConfigVersion.cmake"
   DESTINATION ${CMAKE_INSTALL_DIR}
   COMPONENT dev
 )
-install(
-  EXPORT muduo
-  DESTINATION ${CMAKE_INSTALL_DIR}
-  NAMESPACE muduo::
-  FILE muduo-targets.cmake
-  COMPONENT dev
-)
+
+# install(
+#   EXPORT ${PROJECT_NAME}
+#   DESTINATION ${CMAKE_INSTALL_DIR}
+#   NAMESPACE muduo::
+#   FILE ${PROJECT_NAME}-targets.cmake
+#   COMPONENT dev
+# )
