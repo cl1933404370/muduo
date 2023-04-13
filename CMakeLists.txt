@@ -1,8 +1,7 @@
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8.12)
 
 project(muduo C CXX)
-
-enable_testing()
+#enable_testing()
 
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE "Release")
@@ -10,7 +9,7 @@ endif()
 
 # only build examples if this is the main project
 if(CMAKE_PROJECT_NAME STREQUAL "muduo")
-  option(MUDUO_BUILD_EXAMPLES "Build Muduo examples" ON)
+  option(MUDUO_BUILD_EXAMPLES "Build Muduo examples" OFF)
 endif()
 
 set(CXX_FLAGS
@@ -30,7 +29,7 @@ set(CXX_FLAGS
  -Wwrite-strings
  -march=native
  # -MMD
- -std=c++11
+ -std=c++20
  -rdynamic
  )
 if(CMAKE_BUILD_BITS EQUAL 32)
@@ -50,26 +49,21 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG")
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 
-find_package(Boost REQUIRED)
-find_package(Protobuf)
-find_package(CURL)
-find_package(ZLIB)
-find_path(CARES_INCLUDE_DIR ares.h)
-find_library(CARES_LIBRARY NAMES cares)
-find_path(MHD_INCLUDE_DIR microhttpd.h)
-find_library(MHD_LIBRARY NAMES microhttpd)
-find_library(BOOSTTEST_LIBRARY NAMES boost_unit_test_framework)
-find_library(BOOSTPO_LIBRARY NAMES boost_program_options)
-find_library(BOOSTSYSTEM_LIBRARY NAMES boost_system)
-find_path(TCMALLOC_INCLUDE_DIR gperftools/heap-profiler.h)
-find_library(TCMALLOC_LIBRARY NAMES tcmalloc_and_profiler)
-find_path(HIREDIS_INCLUDE_DIR hiredis/hiredis.h)
-find_library(HIREDIS_LIBRARY NAMES hiredis)
-find_path(GD_INCLUDE_DIR gd.h)
-find_library(GD_LIBRARY NAMES gd)
-find_program(THRIFT_COMPILER thrift)
-find_path(THRIFT_INCLUDE_DIR thrift)
-find_library(THRIFT_LIBRARY NAMES thrift)
+# find_package(unofficial-sodium CONFIG REQUIRED)
+# find_package(folly CONFIG REQUIRED)
+#find_package(glog CONFIG REQUIRED)
+# find_package(TBB CONFIG REQUIRED)
+find_package(protobuf CONFIG REQUIRED)
+#find_package(gRPC CONFIG REQUIRED)
+find_package(CURL CONFIG REQUIRED)
+find_package(ZLIB REQUIRED)
+find_package(Boost REQUIRED COMPONENTS unit_test_framework program_options system thread)
+find_package(c-ares CONFIG REQUIRED)
+# find_library(BOOSTTHREAD_LIBRARY NAMES boost_thread)
+# find_library(BOOSTTEST_LIBRARY NAMES boost_unit_test_framework)
+# find_library(BOOSTPO_LIBRARY NAMES boost_program_options)
+# find_library(BOOSTSYSTEM_LIBRARY NAMES boost_system)
+
 
 if(CARES_INCLUDE_DIR AND CARES_LIBRARY)
   message(STATUS "found cares")
@@ -114,4 +108,3 @@ else()
     add_subdirectory(examples/cdns)
   endif()
 endif()
-

@@ -1,0 +1,230 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 24,
+    "patch": 1
+  },
+  "configurePresets": [
+    {
+      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_C_COMPILER": "gcc",
+        "CMAKE_CXX_COMPILER": "g++",
+        "CMAKE_MAKE_PROGRAM": "ninja",
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}",
+        "CMAKE_TOOLCHAIN_FILE": {
+          "type": "FILEPATH",
+          "value": "/home/cl/git/vcpkg/scripts/buildsystems/vcpkg.cmake"
+        }
+      },
+      "environment": {
+        "VCPKG_FEATURE_FLAGS": "manifests,versions,binarycaching,registries"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      },
+      "description": "Sets Ninja generator, compilers, build and install directory, debug build type",
+      "displayName": "Linux Debug",
+      "generator": "Ninja",
+      "installDir": "${sourceDir}/out/install/${presetName}",
+      "name": "linux-debug",
+      "vendor": {
+        "microsoft.com/VisualStudioSettings/CMake/1.0": {
+          "hostOS": [
+            "Linux"
+          ]
+        },
+        "microsoft.com/VisualStudioRemoteSettings/CMake/1.0": {
+          "sourceDir": "$env{HOME}/.vs/$ms{projectDirName}"
+        }
+      }
+    },
+    {
+      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_C_COMPILER": "gcc",
+        "CMAKE_CXX_COMPILER": "g++",
+        "CMAKE_MAKE_PROGRAM": "ninja",
+        "CMAKE_TOOLCHAIN_FILE": {
+          "type": "FILEPATH",
+          "value": "/home/cl/git/vcpkg/scripts/buildsystems/vcpkg.cmake"
+        }
+      },
+      "environment": {
+        "VCPKG_FEATURE_FLAGS": "manifests,versions,binarycaching,registries"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      },
+      "displayName": "Linux Release",
+      "generator": "Ninja",
+      "installDir": "${sourceDir}/out/install/${presetName}",
+      "name": "linux-Release",
+      "vendor": {
+        "microsoft.com/VisualStudioRemoteSettings/CMake/1.0": {
+          "sourceDir": "$env{HOME}/.vs/$ms{projectDirName}"
+        }
+      }
+    },
+    {
+      "name": "conf-common",
+      "description": "General settings that apply to all configurations",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "installDir": "${sourceDir}/out/install/${presetName}"
+    },
+    {
+      "name": "conf-windows-common",
+      "description": "Windows settings for MSBuild toolchain that apply to msvc and clang",
+      "hidden": true,
+      "inherits": "conf-common",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      },
+      "architecture": {
+        "value": "x64",
+        "strategy": "external"
+      },
+      "toolset": {
+        "value": "host=x64",
+        "strategy": "external"
+      },
+      "cacheVariables": {
+        "ENABLE_CPPCHECK_DEFAULT": "FALSE",
+        "ENABLE_CLANG_TIDY_DEFAULT": "FALSE",
+        "CMAKE_TOOLCHAIN_FILE": {
+          "value": "D:\\dev\\vcpkg\\scripts/buildsystems/vcpkg.cmake",
+          "type": "FILEPATH"
+        }
+      }
+    },
+    {
+      "name": "conf-linux-common",
+      "description": "Linux settings for gcc and clang toolchains",
+      "hidden": true,
+      "inherits": "conf-common",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      },
+      "vendor": {
+        "microsoft.com/VisualStudioRemoteSettings/CMake/1.0": {
+          "sourceDir": "$env{HOME}/.vs/$ms{projectDirName}"
+        }
+      }
+    },
+    {
+      "name": "windows-msvc-debug-developer-mode",
+      "displayName": "msvc Debug (Developer Mode)",
+      "description": "Target Windows with the msvc compiler, debug build type",
+      "generator": "Visual Studio 17 2022",
+      "inherits": "conf-windows-common",
+      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "architecture": {
+        "value": "x64",
+        "strategy": "external"
+      },
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "cl",
+        "CMAKE_CXX_COMPILER": "cl",
+        "CMAKE_BUILD_TYPE": "Debug",
+        //"ENABLE_DEVELOPER_MODE": "off",
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}",
+        "CMAKE_TOOLCHAIN_FILE": {
+          "value": "D:/dev/vcpkg/scripts/buildsystems/vcpkg.cmake",
+          "type": "FILEPATH"
+        }
+      },
+      "vendor": {
+        "microsoft.com/VisualStudioSettings/CMake/1.0": {
+          "hostOS": [
+            "Windows"
+          ]
+        }
+      }
+    },
+    {
+      "name": "windows-msvc-release-developer-mode",
+      "displayName": "msvc Release (Developer Mode)",
+      "description": "Target Windows with the msvc compiler, release build type",
+      "generator": "Visual Studio 17 2022",
+      "inherits": "conf-windows-common",
+      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "architecture": {
+        "value": "x64",
+        "strategy": "external"
+      },
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "cl",
+        "CMAKE_CXX_COMPILER": "cl",
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "ENABLE_DEVELOPER_MODE": "ON",
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}",
+        "CMAKE_TOOLCHAIN_FILE": {
+          "value": "D:\\dev\\vcpkg/scripts/buildsystems/vcpkg.cmake",
+          "type": "FILEPATH"
+        }
+      },
+      "vendor": {
+        "microsoft.com/VisualStudioSettings/CMake/1.0": {
+          "hostOS": [
+            "Windows"
+          ]
+        }
+      }
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "test-common",
+      "description": "Test CMake settings that apply to all configurations",
+      "hidden": true,
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error",
+        "stopOnFailure": true
+      }
+    },
+    {
+      "name": "test-windows-msvc-debug-developer-mode",
+      "displayName": "Strict",
+      "description": "Enable output and stop on failure",
+      "inherits": "test-common",
+      "configurePreset": "windows-msvc-debug-developer-mode"
+    },
+    {
+      "name": "test-windows-msvc-release-developer-mode",
+      "displayName": "Strict",
+      "description": "Enable output and stop on failure",
+      "inherits": "test-common",
+      "configurePreset": "windows-msvc-release-developer-mode"
+    },
+    {
+      "name": "test-linux-gcc-debug",
+      "displayName": "Strict",
+      "description": "Enable output and stop on failure",
+      "inherits": "test-common",
+      "configurePreset": "linux-debug"
+    },
+    {
+      "name": "test-linux-gcc-release",
+      "displayName": "Strict",
+      "description": "Enable output and stop on failure",
+      "inherits": "test-common",
+      "configurePreset": "linux-Release"
+    }
+  ]
+}
