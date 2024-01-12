@@ -4,7 +4,12 @@
 #include "muduo/base/Thread.h"
 
 #include <stdio.h>
+#if _MSC_VER
+#include <Windows.h>
+#else
 #include <unistd.h>
+#endif
+
 
 class Test : muduo::noncopyable
 {
@@ -40,7 +45,8 @@ void threadFunc(const char* changeTo)
 {
   print();
   STL.setName(changeTo);
-  sleep(1);
+  //sleep(1);
+  std::this_thread::sleep_for(std::chrono::seconds(1));
   print();
 }
 
@@ -54,5 +60,5 @@ int main()
   t1.join();
   print();
   t2.join();
-  pthread_exit(0);
+  return 0;
 }

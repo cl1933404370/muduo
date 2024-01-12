@@ -313,7 +313,7 @@ class Balancer : noncopyable
   RpcCodec codec_;
   std::vector<InetAddress> backends_;
   AtomicInt32 threadCount_;
-  ThreadLocal<PerThread> t_backends_;
+  thread_local PerThread t_backends_;
 };
 
 int main(int argc, char* argv[])

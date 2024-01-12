@@ -8,8 +8,6 @@
 
 #include "muduo/base/Mutex.h"
 
-#include <pthread.h>
-
 namespace muduo
 {
 
@@ -19,18 +17,21 @@ class Condition : noncopyable
   explicit Condition(MutexLock& mutex)
     : mutex_(mutex)
   {
-    MCHECK(pthread_cond_init(&pcond_, NULL));
+    //MCHECK(pthread_cond_init(&pcond_, NULL));
+
   }
 
   ~Condition()
   {
-    MCHECK(pthread_cond_destroy(&pcond_));
+    //MCHECK(pthread_cond_destroy(&pcond_));
+
   }
 
   void wait()
   {
     MutexLock::UnassignGuard ug(mutex_);
-    MCHECK(pthread_cond_wait(&pcond_, mutex_.getPthreadMutex()));
+    std::unique_lock lck(mutex_.getstdMutex());
+    pcond_.wait(lck);
   }
 
   // returns true if time out, false otherwise.
@@ -38,17 +39,17 @@ class Condition : noncopyable
 
   void notify()
   {
-    MCHECK(pthread_cond_signal(&pcond_));
+    pcond_.notify_all();
   }
 
   void notifyAll()
   {
-    MCHECK(pthread_cond_broadcast(&pcond_));
+    pcond_.notify_one();
   }
 
  private:
   MutexLock& mutex_;
-  pthread_cond_t pcond_;
+  std::condition_variable pcond_;
 };
 
 }  // namespace muduo

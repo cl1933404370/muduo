@@ -6,9 +6,12 @@
 #ifndef MUDUO_BASE_ATOMIC_H
 #define MUDUO_BASE_ATOMIC_H
 
+#include <atomic>
+
 #include "muduo/base/noncopyable.h"
 
 #include <stdint.h>
+#include <tuple>
 
 namespace muduo
 {
@@ -20,7 +23,7 @@ class AtomicIntegerT : noncopyable
 {
  public:
   AtomicIntegerT()
-    : value_(0)
+    : value_{}
   {
   }
 
@@ -39,13 +42,13 @@ class AtomicIntegerT : noncopyable
   T get()
   {
     // in gcc >= 4.7: __atomic_load_n(&value_, __ATOMIC_SEQ_CST)
-    return __sync_val_compare_and_swap(&value_, 0, 0);
+    return value_.load();
   }
 
   T getAndAdd(T x)
   {
     // in gcc >= 4.7: __atomic_fetch_add(&value_, x, __ATOMIC_SEQ_CST)
-    return __sync_fetch_and_add(&value_, x);
+    return value_.fetch_add(x);
   }
 
   T addAndGet(T x)
@@ -81,11 +84,11 @@ class AtomicIntegerT : noncopyable
   T getAndSet(T newValue)
   {
     // in gcc >= 4.7: __atomic_exchange_n(&value_, newValue, __ATOMIC_SEQ_CST)
-    return __sync_lock_test_and_set(&value_, newValue);
+    return value_.exchange(newValue);
   }
 
  private:
-  volatile T value_;
+  std::atomic<T> value_;
 };
 }  // namespace detail
 

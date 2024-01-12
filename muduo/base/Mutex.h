@@ -8,8 +8,11 @@
 
 #include "muduo/base/CurrentThread.h"
 #include "muduo/base/noncopyable.h"
+#include  "muduo/base/crossplatform.h"
 #include <assert.h>
-#include <pthread.h>
+#include  <mutex>
+#include <condition_variable>
+#include <memory>
 
 // Thread safety annotations {
 // https://clang.llvm.org/docs/ThreadSafetyAnalysis.html
@@ -58,6 +61,9 @@
 #define RELEASE_SHARED(...) \
   THREAD_ANNOTATION_ATTRIBUTE__(release_shared_capability(__VA_ARGS__))
 
+#define RELEASE_GENERIC(...) \
+  THREAD_ANNOTATION_ATTRIBUTE__(release_generic_capability(__VA_ARGS__))
+
 #define TRY_ACQUIRE(...) \
   THREAD_ANNOTATION_ATTRIBUTE__(try_acquire_capability(__VA_ARGS__))
 
@@ -78,7 +84,6 @@
 
 #define NO_THREAD_SAFETY_ANALYSIS \
   THREAD_ANNOTATION_ATTRIBUTE__(no_thread_safety_analysis)
-
 // End of thread safety annotations }
 
 #ifdef CHECK_PTHREAD_RETURN_VALUE
@@ -124,13 +129,11 @@ class CAPABILITY("mutex") MutexLock : noncopyable
   MutexLock()
     : holder_(0)
   {
-    MCHECK(pthread_mutex_init(&mutex_, NULL));
   }
 
   ~MutexLock()
   {
     assert(holder_ == 0);
-    MCHECK(pthread_mutex_destroy(&mutex_));
   }
 
   // must be called when locked, i.e. for assertion
@@ -148,20 +151,24 @@ class CAPABILITY("mutex") MutexLock : noncopyable
 
   void lock() ACQUIRE()
   {
-    MCHECK(pthread_mutex_lock(&mutex_));
+    mut.lock();
     assignHolder();
   }
 
   void unlock() RELEASE()
   {
     unassignHolder();
-    MCHECK(pthread_mutex_unlock(&mutex_));
+    mut.unlock();
   }
 
-  pthread_mutex_t* getPthreadMutex() /* non-const */
-  {
-    return &mutex_;
-  }
+  // pthread_mutex_t* getPthreadMutex() /* non-const */
+  // {
+  //   return &mutex_;
+  // }
+    std::mutex& getstdMutex() /* non-const */
+    {
+        return mut;
+    }
 
  private:
   friend class Condition;
@@ -194,7 +201,8 @@ class CAPABILITY("mutex") MutexLock : noncopyable
     holder_ = CurrentThread::tid();
   }
 
-  pthread_mutex_t mutex_;
+  std::mutex mut;
+  bool locked;
   pid_t holder_;
 };
 

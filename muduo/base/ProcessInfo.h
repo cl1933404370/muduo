@@ -14,6 +14,8 @@
 #include <vector>
 #include <sys/types.h>
 
+#include "crossplatform.h"
+
 namespace muduo
 {
 

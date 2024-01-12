@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 3.6)
 if (POLICY CMP0054)
   cmake_policy(SET CMP0054 NEW)
 endif()
@@ -22,6 +22,7 @@ set(PACKAGE_STRING    "${PACKAGE_NAME} ${PACKAGE_VERSION}")
 set(PACKAGE_TARNAME   "${PACKAGE_NAME}-${PACKAGE_VERSION}")
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 project(${PACKAGE_NAME} C CXX)
+#enable_testing()
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_INCLUDE_CURRENT_DIR_IN_INTERFACE ON)
 set(INCLUDE_INSTALL_DIR include CACHE STRING
@@ -36,10 +37,14 @@ set(CMAKE_INSTALL_DIR ${LIB_INSTALL_DIR}/cmake/${PROJECT_NAME} CACHE STRING
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE "Release")
 endif()
-
 # only build examples if this is the main project
+
 if(CMAKE_PROJECT_NAME STREQUAL "muduo")
-  option(MUDUO_BUILD_EXAMPLES "Build Muduo examples" OFF)
+  if(DEFINED MUDUO_BUILD_EXAMPLES)
+      unset(MUDUO_BUILD_EXAMPLES CACHE)
+  endif()
+  option(MUDUO_BUILD_EXAMPLES "Build Muduo examples" ON)
+  message(STATUS "MUDUO_BUILD_EXAMPLES = ${MUDUO_BUILD_EXAMPLES}")
 endif()
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -56,26 +61,54 @@ set(MUDUO_HAVE_PTHREAD "${CMAKE_USE_PTHREADS_INIT}")
 list(APPEND CMAKE_REQUIRED_LIBRARIES Threads::Threads)
 list(APPEND MUDUO_LINK_LIBRARIES Threads::Threads)
 
-set(CXX_FLAGS
- -g
- # -DVALGRIND
- -DCHECK_PTHREAD_RETURN_VALUE
- -D_FILE_OFFSET_BITS=64
- -Wall
- -Wextra
- # -Werror
- -Wconversion
- -Wno-unused-parameter
- -Wold-style-cast
- -Woverloaded-virtual
- -Wpointer-arith
- -Wshadow
- -Wwrite-strings
- -march=native
- # -MMD
- -std=c++20
- -rdynamic
- )
+#如果编译器是msvc 
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+# using Clang
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+  set(CXX_FLAGS
+  -g
+  -DVALGRIND
+  -DCHECK_PTHREAD_RETURN_VALUE
+  -D_FILE_OFFSET_BITS=64
+  -Wall
+  -Wextra
+   -Werror
+  -Wconversion
+  -Wno-unused-parameter
+  -Wold-style-cast
+  -Woverloaded-virtual
+  -Wpointer-arith
+  -Wshadow
+  -Wwrite-strings
+  -march=native
+  # -MMD
+  -std=c++11
+  -rdynamic
+  )
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
+# using Intel C++
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+  set(CXX_FLAGS
+  #-g
+  # -DVALGRIND
+  -DCHECK_PTHREAD_RETURN_VALUE
+  -D_FILE_OFFSET_BITS=64
+  -Wall
+  #-Wextra
+  # -Werror
+  #-Wconversion
+  #-Wno-unused-parameter
+  #-Wold-style-cast
+  #-Woverloaded-virtual
+  #-Wpointer-arith
+  #-Wshadow
+  #-Wwrite-strings
+  #-march=native
+  # -MMD
+  #-std=c++11
+  #-rdynamic
+  )
+endif()
 
 if(CMAKE_BUILD_BITS EQUAL 32)
   list(APPEND CXX_FLAGS "-m32")
@@ -89,8 +122,8 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 endif()
 string(REPLACE ";" " " CMAKE_CXX_FLAGS "${CXX_FLAGS}")
 
-set(CMAKE_CXX_FLAGS_DEBUG "-O0")
-set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG")
+#set(CMAKE_CXX_FLAGS_DEBUG "-O0")
+#set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG")
 
 #likely muduo-deps.cmake
 include(CheckCXXSourceCompiles)
@@ -120,10 +153,21 @@ find_package(Boost 1.51.0 MODULE
 
 if(Boost_FOUND)
   include_directories(${Boost_INCLUDE_DIRS})
+  list(APPEND MUDUO_LINK_LIBRARIES ${Boost_LIBRARIES})
+  list(APPEND MUDUO_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIRS})
 endif()
 
-list(APPEND MUDUO_LINK_LIBRARIES ${Boost_LIBRARIES})
-list(APPEND MUDUO_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIRS})
+find_package(Protobuf)
+if(Protobuf_FOUND)
+  list(APPEND MUDUO_LINK_LIBRARIES ${Protobuf_LIBRARIES})
+  list(APPEND MUDUO_INCLUDE_DIRECTORIES ${Protobuf_INCLUDE_DIRS})
+endif()
+
+find_package(CURL)
+if(CURL_FOUND)
+  list(APPEND MUDUO_LINK_LIBRARIES ${CURL_LIBRARIES})
+  list(APPEND MUDUO_INCLUDE_DIRECTORIES ${CURL_INCLUDE_DIRS})
+endif()
 
 find_package(ZLIB MODULE)
 set(MUDUO_HAVE_LIBZ ${ZLIB_FOUND})
@@ -131,6 +175,13 @@ if (ZLIB_FOUND)
   list(APPEND MUDUO_INCLUDE_DIRECTORIES ${ZLIB_INCLUDE_DIRS})
   list(APPEND MUDUO_LINK_LIBRARIES ${ZLIB_LIBRARIES})
   list(APPEND CMAKE_REQUIRED_LIBRARIES ${ZLIB_LIBRARIES})
+endif()
+
+find_package(c-ares CONFIG REQUIRED)
+set(MUDUO_HAVE_CARES ${CARES_FOUND})
+if (CARES_FOUND)
+  list(APPEND MUDUO_INCLUDE_DIRECTORIES ${CARES_INCLUDE_DIR})
+  list(APPEND MUDUO_LINK_LIBRARIES ${CARES_LIBRARIES})
 endif()
 
 find_package(OpenSSL 1.1.1 MODULE REQUIRED)
@@ -144,15 +195,6 @@ list(REMOVE_ITEM CMAKE_REQUIRED_INCLUDES ${OPENSSL_INCLUDE_DIR})
 if (ZLIB_FOUND)
     list(REMOVE_ITEM CMAKE_REQUIRED_LIBRARIES ${ZLIB_LIBRARIES})
 endif()
-find_package(c-ares)
-list(APPEND MUDUO_LINK_LIBRARIES ${LIBSODIUM_LIBRARIES})
-list(APPEND MUDUO_INCLUDE_DIRECTORIES ${LIBSODIUM_INCLUDE_DIRS})
-find_package(CURL)
-list(APPEND MUDUO_LINK_LIBRARIES ${LIBSODIUM_LIBRARIES})
-list(APPEND MUDUO_INCLUDE_DIRECTORIES ${LIBSODIUM_INCLUDE_DIRS})
-find_package(Protobuf)
-list(APPEND MUDUO_LINK_LIBRARIES ${LIBSODIUM_LIBRARIES})
-list(APPEND MUDUO_INCLUDE_DIRECTORIES ${LIBSODIUM_INCLUDE_DIRS})
 
 list(APPEND MUDUO_LINK_LIBRARIES ${CMAKE_DL_LIBS})
 list(APPEND CMAKE_REQUIRED_LIBRARIES ${CMAKE_DL_LIBS})
@@ -217,7 +259,6 @@ list(APPEND muduo_base_files
 add_library(muduo_base OBJECT
   ${muduo_base_files}
 )
-
 
 # Generate pkg-config variables from muduo_deps before we add our own
 # build/install-time include directory generator expressions
@@ -406,7 +447,8 @@ install(
 )
 
 
-
+#message PROJECT_BINARY_DIR
+message(STATUS "PROJECT_BINARY_DIR = ${PROJECT_BINARY_DIR}")
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 include_directories(${PROJECT_SOURCE_DIR})
@@ -414,4 +456,11 @@ string(TOUPPER ${CMAKE_BUILD_TYPE} BUILD_TYPE)
 message(STATUS "CXX_FLAGS = " ${CMAKE_CXX_FLAGS} " " ${CMAKE_CXX_FLAGS_${BUILD_TYPE}})
 add_subdirectory(muduo/base)
 add_subdirectory(muduo/net)
-add_subdirectory(contrib)
+if(MUDUO_BUILD_EXAMPLES)
+  #add_subdirectory(contrib)
+  #add_subdirectory(examples)
+else()
+  if(CARES_INCLUDE_DIR AND CARES_LIBRARIES)
+    add_subdirectory(examples/cdns)
+  endif()
+endif()

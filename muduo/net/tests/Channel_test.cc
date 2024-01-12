@@ -6,8 +6,12 @@
 #include <map>
 
 #include <stdio.h>
-#include <unistd.h>
-#include <sys/timerfd.h>
+#ifdef _WIN32
+    #include <windows.h>
+#else
+    #include <unistd.h>
+    #include <sys/timerfd.h>
+#endif
 
 using namespace muduo;
 using namespace muduo::net;
@@ -38,12 +42,12 @@ void readTimerfd(int timerfd, Timestamp now);
 class PeriodicTimer
 {
  public:
-  PeriodicTimer(EventLoop* loop, double interval, const TimerCallback& cb)
+  PeriodicTimer(EventLoop* loop, double interval, TimerCallback cb)
     : loop_(loop),
       timerfd_(muduo::net::detail::createTimerfd()),
       timerfdChannel_(loop, timerfd_),
       interval_(interval),
-      cb_(cb)
+      cb_(std::move(cb))
   {
     timerfdChannel_.setReadCallback(
         std::bind(&PeriodicTimer::handleRead, this));

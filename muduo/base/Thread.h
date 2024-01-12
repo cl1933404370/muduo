@@ -12,7 +12,6 @@
 
 #include <functional>
 #include <memory>
-#include <pthread.h>
 
 namespace muduo
 {
@@ -41,7 +40,7 @@ class Thread : noncopyable
 
   bool       started_;
   bool       joined_;
-  pthread_t  pthreadId_;
+  //pthread_t  pthreadId_;
   pid_t      tid_;
   ThreadFunc func_;
   string     name_;

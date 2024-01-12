@@ -92,16 +92,12 @@
         "rhs": "Windows"
       },
       "architecture": {
-        "value": "x64",
-        "strategy": "external"
-      },
-      "toolset": {
-        "value": "host=x64",
+        "value": "v143,host=x64",
         "strategy": "external"
       },
       "cacheVariables": {
-        "ENABLE_CPPCHECK_DEFAULT": "FALSE",
-        "ENABLE_CLANG_TIDY_DEFAULT": "FALSE",
+        "ENABLE_CPPCHECK_DEFAULT": "TRUE",
+        "ENABLE_CLANG_TIDY_DEFAULT": "TRUE",
         "CMAKE_TOOLCHAIN_FILE": {
           "value": "D:\\dev\\vcpkg\\scripts/buildsystems/vcpkg.cmake",
           "type": "FILEPATH"
@@ -125,24 +121,23 @@
       }
     },
     {
-      "name": "windows-msvc-debug-developer-mode",
-      "displayName": "msvc Debug (Developer Mode)",
-      "description": "Target Windows with the msvc compiler, debug build type",
-      "generator": "Visual Studio 17 2022",
+      "name": "x64-debug",
+      "displayName": "x64 Debug",
+      "description": "Target Windows (64-bit) with the Visual Studio development environment. (Debug)",
       "inherits": "conf-windows-common",
-      "binaryDir": "${sourceDir}/out/build/${presetName}",
       "architecture": {
         "value": "x64",
         "strategy": "external"
       },
+      "generator": "Visual Studio 17 2022",
       "cacheVariables": {
         "CMAKE_C_COMPILER": "cl",
         "CMAKE_CXX_COMPILER": "cl",
         "CMAKE_BUILD_TYPE": "Debug",
-        //"ENABLE_DEVELOPER_MODE": "off",
+        "ENABLE_DEVELOPER_MODE": "ON",
         "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}",
         "CMAKE_TOOLCHAIN_FILE": {
-          "value": "D:/dev/vcpkg/scripts/buildsystems/vcpkg.cmake",
+          "value": "D:\\dev\\vcpkg/scripts/buildsystems/vcpkg.cmake",
           "type": "FILEPATH"
         }
       },
@@ -160,7 +155,6 @@
       "description": "Target Windows with the msvc compiler, release build type",
       "generator": "Visual Studio 17 2022",
       "inherits": "conf-windows-common",
-      "binaryDir": "${sourceDir}/out/build/${presetName}",
       "architecture": {
         "value": "x64",
         "strategy": "external"
@@ -183,48 +177,6 @@
           ]
         }
       }
-    }
-  ],
-  "testPresets": [
-    {
-      "name": "test-common",
-      "description": "Test CMake settings that apply to all configurations",
-      "hidden": true,
-      "output": {
-        "outputOnFailure": true
-      },
-      "execution": {
-        "noTestsAction": "error",
-        "stopOnFailure": true
-      }
-    },
-    {
-      "name": "test-windows-msvc-debug-developer-mode",
-      "displayName": "Strict",
-      "description": "Enable output and stop on failure",
-      "inherits": "test-common",
-      "configurePreset": "windows-msvc-debug-developer-mode"
-    },
-    {
-      "name": "test-windows-msvc-release-developer-mode",
-      "displayName": "Strict",
-      "description": "Enable output and stop on failure",
-      "inherits": "test-common",
-      "configurePreset": "windows-msvc-release-developer-mode"
-    },
-    {
-      "name": "test-linux-gcc-debug",
-      "displayName": "Strict",
-      "description": "Enable output and stop on failure",
-      "inherits": "test-common",
-      "configurePreset": "linux-debug"
-    },
-    {
-      "name": "test-linux-gcc-release",
-      "displayName": "Strict",
-      "description": "Enable output and stop on failure",
-      "inherits": "test-common",
-      "configurePreset": "linux-Release"
     }
   ]
 }
